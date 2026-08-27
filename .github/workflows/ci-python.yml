@@ -87,7 +87,8 @@ jobs:
           if [ -n "$TEST_CMD" ]; then
             eval "$TEST_CMD"
           else
-            pytest -q; rc=$?
+            rc=0
+            pytest -q || rc=$?
             if [ "$rc" = "5" ]; then
               echo "::notice::pytest collected no tests"
               exit 0
