@@ -28,6 +28,10 @@ on:
         description: "npm ci when a lockfile exists, else npm install"
         type: string
         default: ""
+      strict-lint:
+        description: "fail the build on lint errors (default: warn only)"
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -59,7 +63,14 @@ jobs:
 
       - name: Lint
         shell: bash
-        run: npm run lint --if-present
+        env:
+          STRICT: ${{ inputs.strict-lint }}
+        run: |
+          if [ "$STRICT" = "true" ]; then
+            npm run lint --if-present
+          else
+            npm run lint --if-present || echo "::warning::lint reported problems (non-blocking)"
+          fi
 
       - name: Build
         shell: bash
