@@ -46,9 +46,11 @@ jobs:
 
       - name: Install
         shell: bash
+        env:
+          INSTALL_CMD: ${{ inputs.install-command }}
         run: |
-          if [ -n "${{ inputs.install-command }}" ]; then
-            ${{ inputs.install-command }}
+          if [ -n "$INSTALL_CMD" ]; then
+            eval "$INSTALL_CMD"
           elif [ -f package-lock.json ]; then
             npm ci
           else

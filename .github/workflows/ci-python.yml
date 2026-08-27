@@ -69,14 +69,23 @@ jobs:
       - name: Lint
         if: ${{ inputs.lint }}
         shell: bash
-        run: ruff check . ${{ inputs.strict-lint && '' || '|| true' }}
+        env:
+          STRICT: ${{ inputs.strict-lint }}
+        run: |
+          if [ "$STRICT" = "true" ]; then
+            ruff check .
+          else
+            ruff check . || true
+          fi
 
       - name: Test
         shell: bash
+        env:
+          TEST_CMD: ${{ inputs.test-command }}
         run: |
-          if [ -n "${{ inputs.test-command }}" ]; then
-            ${{ inputs.test-command }}
-          elif ls -d tests test_*.py conftest.py 2>/dev/null | head -1 | grep -q .; then
+          if [ -n "$TEST_CMD" ]; then
+            eval "$TEST_CMD"
+          elif ls -d tests test_*.py conftest.py 2>/dev/null | grep -q .; then
             pytest -q
           else
             echo "::notice::no tests found, skipping"
