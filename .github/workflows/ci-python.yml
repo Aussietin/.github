@@ -62,7 +62,8 @@ jobs:
           elif [ -f requirements.txt ]; then
             pip install -r requirements.txt
           elif [ -f pyproject.toml ]; then
-            pip install -e ".[dev]" || pip install -e .
+            pip install -e ".[dev]" || pip install -e . || pip install . || \
+              pip install $(python -c "import pathlib,tomllib; print(' '.join(tomllib.loads(pathlib.Path('pyproject.toml').read_text()).get('project',{}).get('dependencies',[])))")
           fi
           pip install pytest ruff
 
