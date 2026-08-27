@@ -1,0 +1,68 @@
+name: ci-node (reusable)
+
+# Reusable Node CI. Called from a repo's own .github/workflows/ci.yml:
+#
+#   jobs:
+#     node:
+#       uses: Aussietin/.github/.github/workflows/ci-node.yml@main
+#       with:
+#         working-directory: frontend
+#         node-version: "20"
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        type: string
+        default: "."
+      node-version:
+        type: string
+        default: "20"
+      build-command:
+        type: string
+        default: "npm run build --if-present"
+      test-command:
+        type: string
+        default: "npm test --if-present"
+      install-command:
+        description: "npm ci when a lockfile exists, else npm install"
+        type: string
+        default: ""
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: npm
+          cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
+
+      - name: Install
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.install-command }}" ]; then
+            ${{ inputs.install-command }}
+          elif [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Lint
+        shell: bash
+        run: npm run lint --if-present
+
+      - name: Build
+        shell: bash
+        run: ${{ inputs.build-command }}
+
+      - name: Test
+        shell: bash
+        run: ${{ inputs.test-command }}

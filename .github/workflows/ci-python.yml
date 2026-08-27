@@ -1,0 +1,83 @@
+name: ci-python (reusable)
+
+# Reusable Python CI. Called from a repo's own .github/workflows/ci.yml:
+#
+#   jobs:
+#     python:
+#       uses: Aussietin/.github/.github/workflows/ci-python.yml@main
+#       with:
+#         working-directory: backend
+#         python-version: "3.12"
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        type: string
+        default: "."
+      python-version:
+        type: string
+        default: "3.12"
+      runs-on:
+        type: string
+        default: "ubuntu-latest"
+      requirements:
+        description: "pip install target(s); falls back to requirements.txt then -e ."
+        type: string
+        default: ""
+      test-command:
+        description: "override test command; default auto-detects pytest"
+        type: string
+        default: ""
+      lint:
+        description: "run ruff (warn-only until a repo opts in with strict-lint)"
+        type: boolean
+        default: true
+      strict-lint:
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    runs-on: ${{ inputs.runs-on }}
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          if [ -n "${{ inputs.requirements }}" ]; then
+            pip install ${{ inputs.requirements }}
+          elif [ -f requirements-dev.txt ]; then
+            pip install -r requirements-dev.txt
+          elif [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          elif [ -f pyproject.toml ]; then
+            pip install -e ".[dev]" || pip install -e .
+          fi
+          pip install pytest ruff
+
+      - name: Lint
+        if: ${{ inputs.lint }}
+        shell: bash
+        run: ruff check . ${{ inputs.strict-lint && '' || '|| true' }}
+
+      - name: Test
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.test-command }}" ]; then
+            ${{ inputs.test-command }}
+          elif ls -d tests test_*.py conftest.py 2>/dev/null | head -1 | grep -q .; then
+            pytest -q
+          else
+            echo "::notice::no tests found, skipping"
+          fi

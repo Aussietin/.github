@@ -1,0 +1,27 @@
+name: CI
+
+# Starter caller. Keep the job(s) you need, delete the rest, point the inputs
+# at your layout. The heavy lifting lives in Aussietin/.github reusable workflows.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  python:
+    uses: Aussietin/.github/.github/workflows/ci-python.yml@main
+    with:
+      working-directory: "."
+      python-version: "3.12"
+
+  # node:
+  #   uses: Aussietin/.github/.github/workflows/ci-node.yml@main
+  #   with:
+  #     working-directory: frontend
+  #     node-version: "20"
+
+  # godot:
+  #   uses: Aussietin/.github/.github/workflows/ci-godot.yml@main
+  #   with:
+  #     godot-version: "4.7"

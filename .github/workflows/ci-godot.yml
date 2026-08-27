@@ -1,0 +1,49 @@
+name: ci-godot (reusable)
+
+# Reusable Godot headless test CI. Runs the project's headless test script
+# (the tests/run_tests.gd pattern used across Ratoon / Hollowdeep / Pocket Ratoon).
+#
+#   jobs:
+#     godot:
+#       uses: Aussietin/.github/.github/workflows/ci-godot.yml@main
+#       with:
+#         godot-version: "4.7"
+#         test-script: "res://tests/run_tests.gd"
+
+on:
+  workflow_call:
+    inputs:
+      godot-version:
+        type: string
+        default: "4.7"
+      test-script:
+        type: string
+        default: "res://tests/run_tests.gd"
+      extra-test-script:
+        description: "optional second script, e.g. res://tests/integration_smoke.gd"
+        type: string
+        default: ""
+      project-dir:
+        type: string
+        default: "."
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:${{ inputs.godot-version }}
+    defaults:
+      run:
+        working-directory: ${{ inputs.project-dir }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Import project (headless)
+        run: godot --headless --import || true
+
+      - name: Run test script
+        run: godot --headless --script ${{ inputs.test-script }} --quit
+
+      - name: Run extra test script
+        if: ${{ inputs.extra-test-script != '' }}
+        run: godot --headless --script ${{ inputs.extra-test-script }} --quit

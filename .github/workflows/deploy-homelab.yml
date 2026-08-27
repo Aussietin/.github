@@ -1,0 +1,52 @@
+name: deploy-homelab (reusable)
+
+# Reusable homelab deploy. Runs on the self-hosted runner registered on the
+# homelab box (labels: self-hosted, homelab). Pulls latest main in the service
+# directory and restarts its compose stack.
+#
+#   jobs:
+#     deploy:
+#       needs: [ci]
+#       if: github.ref == 'refs/heads/main'
+#       uses: Aussietin/.github/.github/workflows/deploy-homelab.yml@main
+#       with:
+#         service-path: /home/austin/photosync
+#         compose-file: docker-compose.homelab.yml
+#         pull-images: true      # GHCR-published images (photosync); false = build on box
+
+on:
+  workflow_call:
+    inputs:
+      service-path:
+        type: string
+      compose-file:
+        type: string
+        default: "docker-compose.yml"
+      pull-images:
+        type: boolean
+        default: true
+      git-pull:
+        description: "git pull --ff-only in service-path before deploy"
+        type: boolean
+        default: true
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, homelab]
+    steps:
+      - name: Deploy ${{ inputs.service-path }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "${{ inputs.service-path }}"
+          if [ "${{ inputs.git-pull }}" = "true" ]; then
+            git fetch origin
+            git pull --ff-only
+          fi
+          if [ "${{ inputs.pull-images }}" = "true" ]; then
+            docker compose -f "${{ inputs.compose-file }}" pull
+          else
+            docker compose -f "${{ inputs.compose-file }}" build
+          fi
+          docker compose -f "${{ inputs.compose-file }}" up -d --remove-orphans
+          docker compose -f "${{ inputs.compose-file }}" ps

@@ -1,0 +1,6 @@
+{
+  "name": "Dependabot auto-merge",
+  "description": "Auto-merge Dependabot patch/minor PRs after CI passes; hold majors for review.",
+  "iconName": "octicon-dependabot",
+  "categories": ["Automation"]
+}

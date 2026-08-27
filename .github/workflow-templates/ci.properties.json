@@ -1,0 +1,6 @@
+{
+  "name": "CI (Aussietin reusable)",
+  "description": "Lint + build + test via the shared reusable workflows. Edit inputs for your repo layout.",
+  "iconName": "octicon-checklist",
+  "categories": ["Continuous integration"]
+}
