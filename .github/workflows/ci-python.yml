@@ -85,8 +85,11 @@ jobs:
         run: |
           if [ -n "$TEST_CMD" ]; then
             eval "$TEST_CMD"
-          elif ls -d tests test_*.py conftest.py 2>/dev/null | grep -q .; then
-            pytest -q
           else
-            echo "::notice::no tests found, skipping"
+            pytest -q; rc=$?
+            if [ "$rc" = "5" ]; then
+              echo "::notice::pytest collected no tests"
+              exit 0
+            fi
+            exit "$rc"
           fi
