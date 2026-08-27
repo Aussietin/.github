@@ -36,7 +36,7 @@ jobs:
       run:
         working-directory: ${{ inputs.project-dir }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Import project (headless)
         run: godot --headless --import || true
