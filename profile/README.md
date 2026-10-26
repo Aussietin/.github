@@ -1,7 +1,9 @@
 # Aussietin
 
-Personal projects — precision-ag tooling, homelab services, games, and small
-utilities. Most repos share a standard CI + Dependabot auto-merge setup driven by
-the reusable workflows in this repo (`.github/workflows/ci-*.yml`).
+Games, tools and self-hosted apps by Austin Crozier, from the Mackay region, QLD.
 
-See `repo-kit/RUNBOOK.md` in `claude-config` for the dev workflow.
+Public code: [nethealth](https://github.com/Aussietin/nethealth) and
+[PhotoSync](https://github.com/Aussietin/PhotoSync). Games and the rest are on
+the portfolio at [aussietin.github.io](https://aussietin.github.io).
+
+This repo also hosts shared CI and deploy workflows (GitHub Actions) reused by my other repositories.
